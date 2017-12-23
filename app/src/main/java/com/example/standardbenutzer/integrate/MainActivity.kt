@@ -3,7 +3,6 @@ package com.example.standardbenutzer.integrate
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
-import android.text.Editable
 import android.view.Menu
 import android.view.MenuItem
 
@@ -19,6 +18,15 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener { view ->
             editText.setText(drawView.getText())
         }
+        drawView.setUpdatedBoundsListener( object : DrawView.UpdatedBoundsListener {
+                override fun onBoundsUpdated(bounds : List<Double>) {
+                    val upper = Math.max(bounds[0],bounds[1])
+                    val lower = Math.min(bounds[0],bounds[1])
+                    val result = (upper - lower).div(2).times(Math.exp(lower) + Math.exp(upper))
+                    editText.setText("Integrate from %.2f to %.2f: %.6f".format(lower,upper,result))
+                }
+            }
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

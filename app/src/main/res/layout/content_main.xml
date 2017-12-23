@@ -58,7 +58,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:drawable/editbox_background_normal"
-                android:text="Button" />
+                android:text="Calculate" />
 
             <EditText
                 android:id="@+id/editText"
@@ -69,7 +69,7 @@
                 android:inputType="textMultiLine"
                 android:selectAllOnFocus="false"
                 android:singleLine="false"
-                android:text="This is the log for the application" />
+                android:text="" />
 
         </LinearLayout>
 

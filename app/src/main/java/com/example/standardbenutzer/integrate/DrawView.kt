@@ -18,7 +18,8 @@ class DrawView : View{
     private var prevY = 0
     private var lowerBound = 0
     private var upperBound = 0
-
+    private val divFac = 100;
+    private var listener: UpdatedBoundsListener? = null
     constructor(context:Context) : super(context) {
         paint.color = Color.BLACK
         paint.isAntiAlias = true
@@ -32,13 +33,13 @@ class DrawView : View{
     }
 
     override fun onDraw(canvas: Canvas?) {
-        paint.color = Color.WHITE
+        paint.color = Color.parseColor("#FAFAFA")
         canvas?.drawRect(0f,0f,canvas?.width!!.toFloat(),canvas?.height!!.toFloat(),paint)
         val xPoints : MutableList<Int> = mutableListOf()
         val yPoints : MutableList<Int> = mutableListOf()
         for(i in 0..canvas?.width!!){
             xPoints.add(i)
-            yPoints.add(Math.exp(i.toDouble().div(100)).toInt())
+            yPoints.add(Math.exp(i.toDouble().div(divFac)).toInt())
         }
         paint.color = Color.BLACK
         for(i in 0 until xPoints.size-2){
@@ -46,12 +47,11 @@ class DrawView : View{
             val startY = canvas?.height - yPoints[i].toFloat()
             val endX = xPoints[i+1].toFloat()
             val endY = canvas?.height - yPoints[i+1].toFloat()
+            paint.color = Color.BLACK
+            canvas?.drawLine(startX,startY,endX,endY, paint)
             if(startX in upperBound..lowerBound && endX in upperBound..lowerBound){
                 paint.color = Color.RED
                 canvas?.drawRect(startX,startY,endX,canvas?.height.toFloat(),paint)
-            } else {
-                paint.color = Color.BLACK
-                canvas?.drawLine(startX,startY,endX,endY, paint)
             }
         }
         drawBounds(canvas)
@@ -71,17 +71,29 @@ class DrawView : View{
 
         prevX = x!!.toInt()
         prevY = y!!.toInt()
+        listener?.onBoundsUpdated(mutableListOf(lowerBound.toDouble().div(divFac),upperBound.toDouble().div(divFac)))
         this.invalidate()
         return true
+    }
+
+    interface UpdatedBoundsListener {
+        fun onBoundsUpdated(bounds : List<Double>)
+    }
+
+    fun setUpdatedBoundsListener(listener : UpdatedBoundsListener){
+        this.listener = listener
     }
 
     private fun drawBounds(canvas : Canvas?){
         paint.color = Color.BLUE
         canvas?.drawLine(lowerBound.toFloat(),canvas?.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
+        canvas?.drawText(lowerBound.toDouble().div(divFac).toString(),lowerBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
+
         canvas?.drawLine(upperBound.toFloat(),canvas?.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
+        canvas?.drawText(upperBound.toDouble().div(divFac).toString(),upperBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
     }
 
     fun getText() : String {
-        return "LowerBound: {$lowerBound} | UpperBound: {$upperBound}"
+        return "LowerBound: $lowerBound | UpperBound: $upperBound"
     }
 }
