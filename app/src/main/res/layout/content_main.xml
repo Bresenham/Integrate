@@ -36,13 +36,14 @@
                 android:text="Function:" />
 
             <EditText
+                android:id="@+id/txtFunction"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentRight="true"
                 android:layout_weight="1"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="e^x" />
+                android:text="x*e" />
 
         </LinearLayout>
 
