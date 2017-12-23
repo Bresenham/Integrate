@@ -7,6 +7,9 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ScaleGestureDetector
+
+
 
 /**
  * Created by Standardbenutzer on 22.12.2017.
@@ -18,21 +21,24 @@ class DrawView : View{
     private var prevY = 0
     private var lowerBound = 0
     private var upperBound = 0
-    private val divFac = 100;
+    private var divFac = 1f
     private var listener: UpdatedBoundsListener? = null
     private var xPoints = listOf<Int>()
     private var yPoints = listOf<Int>()
+    private var scaleDetector : ScaleGestureDetector? = null
 
     constructor(context:Context) : super(context) {
         paint.color = Color.BLACK
         paint.isAntiAlias = true
         paint.strokeWidth = 2f
+        scaleDetector = ScaleGestureDetector(context, ScaleListener())
     }
 
     constructor(context:Context,attr: AttributeSet) : super(context,attr) {
         paint.color = Color.BLACK
         paint.isAntiAlias = true
         paint.strokeWidth = 2f
+        scaleDetector = ScaleGestureDetector(context, ScaleListener())
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -41,14 +47,14 @@ class DrawView : View{
         paint.color = Color.BLACK
         for(i in 0 until xPoints.size-2){
             val startX = xPoints[i].toFloat()
-            val startY = canvas?.height!! - yPoints[i].toFloat().div(divFac)
+            val startY = canvas?.height!! - yPoints[i]
             val endX = xPoints[i+1].toFloat()
-            val endY = canvas?.height!! - yPoints[i+1].toFloat().div(divFac)
+            val endY = canvas?.height!! - yPoints[i+1]
             paint.color = Color.BLACK
-            canvas?.drawLine(startX,startY,endX,endY, paint)
+            canvas?.drawLine(startX,startY.toFloat(),endX,endY.toFloat(), paint)
             if(startX in upperBound..lowerBound && endX in upperBound..lowerBound){
                 paint.color = Color.RED
-                canvas?.drawRect(startX,startY,endX,canvas?.height.toFloat(),paint)
+                canvas?.drawRect(startX,startY.toFloat(),endX,canvas?.height.toFloat(),paint)
             }
         }
         drawBounds(canvas)
@@ -68,9 +74,27 @@ class DrawView : View{
 
         prevX = x!!.toInt()
         prevY = y!!.toInt()
+        scaleDetector?.onTouchEvent(event)
         listener?.onBoundsUpdated(mutableListOf(lowerBound.toDouble().div(divFac),upperBound.toDouble().div(divFac)))
         this.invalidate()
         return true
+    }
+
+    private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+        override fun onScale(detector: ScaleGestureDetector): Boolean {
+            var scale = detector.scaleFactor
+            if(scale > 1) {
+                divFac += scale * 2
+            }
+            else {
+                divFac -= scale * 2
+            }
+            divFac = Math.max(1.0f, Math.min(divFac, 200.0f))
+
+            System.out.println("SCALE FACTOR: $divFac")
+            invalidate()
+            return true
+        }
     }
 
     fun updateFunction(dataPoints : Array<List<Int>>){
@@ -79,13 +103,17 @@ class DrawView : View{
         this.invalidate()
     }
 
+    fun getScaleFactor() : Float {
+        return this.divFac
+    }
+
     private fun drawBounds(canvas : Canvas?){
         paint.color = Color.BLUE
         canvas?.drawLine(lowerBound.toFloat(),canvas?.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText(lowerBound.toDouble().div(divFac).toString(),lowerBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
+        canvas?.drawText("%.2f".format(lowerBound.toDouble().div(divFac)),lowerBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
 
         canvas?.drawLine(upperBound.toFloat(),canvas?.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText(upperBound.toDouble().div(divFac).toString(),upperBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
+        canvas?.drawText("%.2f".format(upperBound.toDouble().div(divFac)),upperBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
     }
 
     interface UpdatedBoundsListener {
