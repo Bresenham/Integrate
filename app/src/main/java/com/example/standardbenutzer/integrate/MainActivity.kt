@@ -1,5 +1,6 @@
 package com.example.standardbenutzer.integrate
 
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
@@ -19,7 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     private var jexl : JexlEngine? = null
     private var jexlExpression : JexlExpression? = null
-    private var validFunction = true
+    private var validFunction = false
     private var containsE = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,8 +35,7 @@ class MainActivity : AppCompatActivity() {
                     if(validFunction) {
                         val upper = Math.max(bounds[0], bounds[1])
                         val lower = Math.min(bounds[0], bounds[1])
-                        val result = adativeIntegration(lower, upper, 0.00001)
-                        editText.setText("Integrate from %.2f to %.2f: %.6f".format(lower, upper, result))
+                        AdaptiveIntegration().execute(jexlExpression,containsE,lower,upper,0.001)
                     }
                 }
             }
@@ -53,6 +53,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         )
+    }
+
+    fun updateIntegratedValue(calc : String){
+        editText.setText(calc)
     }
 
     fun calculateFunctionValues(input : String) : Array<List<Int>>{
@@ -79,35 +83,6 @@ class MainActivity : AppCompatActivity() {
         return arrayOf(xPoints,yPoints)
     }
 
-    fun f(x : Double) : Double{
-        var jexlContext = MapContext()
-        jexlContext.set("x",x)
-        if(containsE)
-            jexlContext.set("e",Math.E)
-        var result = jexlExpression?.evaluate(jexlContext)
-        var res = result as Double
-        return res
-    }
-
-    fun adativeIntegration(a : Double, b : Double, err : Double) : Double{
-        var h = b.minus(a)
-        val s0 = h * ((1.0 / 6.0) * f(a) + (4.0 / 6.0) * f((a + b) / 2) + (1.0 / 6.0) * f(b))
-        h = (b - a).div(2)
-        var s1 = 0.0
-        for (i in 0..1) {
-            var a_1 = a + i.times(h)
-            var b_1 = b + (i + 1).times(h)
-            s1 += h * ((1.0 / 6.0) * f(a_1) + (4.0 / 6.0) * f((a_1 + b_1) / 2) + (1.0 / 6.0) * f(b_1))
-        }
-        var e = Math.abs(s1 - s0)
-
-        if (e <= err)
-            return s1
-        else {
-            return adativeIntegration(a, (a + b).div(2), err) + adativeIntegration((a + b).div(2), b, err)
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -121,6 +96,64 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private inner class AdaptiveIntegration : AsyncTask<Any, Int, Double> {
+        private var containsE = false
+        private var jexlExpression : JexlExpression? = null
+        private var a = 0.0
+        private var b = 0.0
+        private var err = 0.0
+
+        constructor() : super()
+
+        private fun f(x : Double) : Double{
+            var jexlContext = MapContext()
+            jexlContext.set("x",x)
+            if(containsE)
+                jexlContext.set("e",Math.E)
+            var result = jexlExpression?.evaluate(jexlContext)
+            var res = result as Double
+            return res
+        }
+
+        private fun adativeIntegration(a : Double, b : Double, err : Double) : Double{
+            var h = b.minus(a)
+            val s0 = h * ((1.0 / 6.0) * f(a) + (4.0 / 6.0) * f((a + b) / 2) + (1.0 / 6.0) * f(b))
+            h = (b - a).div(2)
+            var s1 = 0.0
+            for (i in 0..1) {
+                var a_1 = a + i.times(h)
+                var b_1 = b + (i + 1).times(h)
+                s1 += h * ((1.0 / 6.0) * f(a_1) + (4.0 / 6.0) * f((a_1 + b_1) / 2) + (1.0 / 6.0) * f(b_1))
+            }
+            var e = Math.abs(s1 - s0)
+
+            if (e <= err)
+                return s1
+            else {
+                return adativeIntegration(a, (a + b).div(2), err) + adativeIntegration((a + b).div(2), b, err)
+            }
+        }
+
+        override fun doInBackground(vararg p0: Any?): Double {
+            jexlExpression = p0[0] as JexlExpression?
+            containsE = p0[1] as Boolean
+            a = p0[2] as Double
+            b = p0[3] as Double
+            err = p0[4] as Double
+
+            return adativeIntegration(a,b,err)
+        }
+
+        override fun onProgressUpdate(vararg values: Int?) {
+            super.onProgressUpdate(*values)
+        }
+
+        override fun onPostExecute(result: Double?) {
+            super.onPostExecute(result)
+            updateIntegratedValue("From $a to $b : %.2f".format(result))
         }
     }
 }
