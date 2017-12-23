@@ -42,7 +42,7 @@
                 android:layout_weight="1"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="x^2" />
+                android:text="e^x" />
 
         </LinearLayout>
 
@@ -50,14 +50,27 @@
             android:id="@+id/buttonView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_below="@+id/topView">
+            android:layout_below="@+id/topView"
+            android:orientation="vertical">
 
             <Button
                 android:id="@+id/button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@android:drawable/editbox_background_normal"
                 android:text="Button" />
+
+            <EditText
+                android:id="@+id/editText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textMultiLine"
+                android:selectAllOnFocus="false"
+                android:singleLine="false"
+                android:text="This is the log for the application" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -68,6 +81,7 @@
             android:layout_below="@+id/buttonView">
 
             <com.example.standardbenutzer.integrate.DrawView
+                android:id="@+id/drawView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
