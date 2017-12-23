@@ -11,12 +11,25 @@ import android.view.View
  * Created by Standardbenutzer on 22.12.2017.
  */
 class DrawView : View{
-    constructor(context:Context) : super(context)
-    constructor(context:Context,attr: AttributeSet) : super(context,attr)
+    private val paint = Paint()
+    constructor(context:Context) : super(context) {
+        paint.color = Color.BLACK
+    }
+    constructor(context:Context,attr: AttributeSet) : super(context,attr) {
+        paint.color = Color.BLACK
+    }
     override fun onDraw(canvas: Canvas?) {
-        canvas?.drawRect(0f,0f,canvas?.width!!.toFloat(),canvas?.height!!.toFloat(),Paint(Color.BLACK))
-        for(i in -50..50){
-            canvas?.drawPoint((i + 50).toFloat(),(canvas?.height - Math.pow(i.toDouble(),2.toDouble())).toFloat(),Paint(Color.GREEN))
+        paint.color = Color.BLACK
+        canvas?.drawRect(0f,0f,canvas?.width!!.toFloat(),canvas?.height!!.toFloat(),paint)
+        val xPoints : MutableList<Int> = mutableListOf()
+        val yPoints : MutableList<Int> = mutableListOf()
+        for(i in 0..50){
+            xPoints.add(i+canvas?.width!!.div(2))
+            yPoints.add(Math.exp(i.toDouble()).toInt())
+        }
+        paint.color = Color.GREEN
+        for(i in 0 until xPoints.size-2){
+            canvas?.drawLine(xPoints[i].toFloat(),canvas?.height - yPoints[i].toFloat(),xPoints[i+1].toFloat(),canvas?.height - yPoints[i+1].toFloat(),paint)
         }
     }
 }
