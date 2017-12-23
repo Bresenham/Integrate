@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         val xPoints : MutableList<Int> = mutableListOf()
         val yPoints : MutableList<Int> = mutableListOf()
         try {
-            for (i in 0..drawView.width){
+            for (i in -drawView.width.div(2)..drawView.width.div(2)){
                 var math = MathEval()
                 math.setVariable("x",i.div(drawView.getScaleFactor().toDouble()))
                 xPoints.add(i + drawView.width.div(2))

@@ -53,7 +53,7 @@ class DrawView : View{
             paint.color = Color.BLACK
             canvas?.drawLine(startX,startY.toFloat(),endX,endY.toFloat(), paint)
             if(startX in upperBound..lowerBound && endX in upperBound..lowerBound){
-                paint.color = Color.RED
+                paint.color = Color.parseColor("#ff4949")
                 canvas?.drawRect(startX,startY.toFloat(),endX,canvas?.height.toFloat(),paint)
             }
         }
@@ -75,7 +75,7 @@ class DrawView : View{
         prevX = x!!.toInt()
         prevY = y!!.toInt()
         scaleDetector?.onTouchEvent(event)
-        listener?.onBoundsUpdated(mutableListOf(lowerBound.toDouble().div(divFac),upperBound.toDouble().div(divFac)))
+        listener?.onBoundsUpdated(mutableListOf(lowerBound.toDouble().minus(this.width.div(2)).div(divFac),upperBound.toDouble().minus(this.width.div(2)).div(divFac)))
         this.invalidate()
         return true
     }
@@ -84,12 +84,12 @@ class DrawView : View{
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             var scale = detector.scaleFactor
             if(scale > 1) {
-                divFac += scale * 2
+                divFac += scale * 5
             }
             else {
-                divFac -= scale * 2
+                divFac -= scale * 5
             }
-            divFac = Math.max(1.0f, Math.min(divFac, 200.0f))
+            divFac = Math.max(1.0f, Math.min(divFac, 1000.0f))
 
             System.out.println("SCALE FACTOR: $divFac")
             invalidate()
@@ -110,10 +110,10 @@ class DrawView : View{
     private fun drawBounds(canvas : Canvas?){
         paint.color = Color.BLUE
         canvas?.drawLine(lowerBound.toFloat(),canvas?.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText("%.2f".format(lowerBound.toDouble().div(divFac)),lowerBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
+        canvas?.drawText("%.2f".format(lowerBound.toDouble().minus(this.width.div(2)).div(divFac)),lowerBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
 
         canvas?.drawLine(upperBound.toFloat(),canvas?.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText("%.2f".format(upperBound.toDouble().div(divFac)),upperBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
+        canvas?.drawText("%.2f".format(upperBound.toDouble().minus(this.width.div(2)).div(divFac)),upperBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
     }
 
     interface UpdatedBoundsListener {
