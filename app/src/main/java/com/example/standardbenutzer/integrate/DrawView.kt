@@ -18,7 +18,6 @@ class DrawView : View{
 
     private val paint = Paint()
     private var prevX = 0
-    private var prevY = 0
     private var lowerBound = 0
     private var upperBound = 0
     private var divFac = 1f
@@ -62,10 +61,9 @@ class DrawView : View{
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         val x = event?.x
-        val y = event?.y
 
         val dX = x?.minus(prevX)
-        val dY = y?.minus(prevY)
+
         if(dX!! > 0){
             lowerBound = x.toInt()
         } else{
@@ -73,7 +71,6 @@ class DrawView : View{
         }
 
         prevX = x!!.toInt()
-        prevY = y!!.toInt()
         scaleDetector?.onTouchEvent(event)
         listener?.onBoundsUpdated(mutableListOf(lowerBound.toDouble().minus(this.width.div(2)).div(divFac),upperBound.toDouble().minus(this.width.div(2)).div(divFac)))
         this.invalidate()
