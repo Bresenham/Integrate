@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     private var functionValuesTasks : MutableList<AsyncFunctionValues>? = null
     private var integrationTasks : MutableList<AsyncAdaptiveIntegration>? = null
+    private val NUMBER_OF_TASKS = 4
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,16 +32,8 @@ class MainActivity : AppCompatActivity() {
                     val lower = Math.min(bounds[0], bounds[1])
 
                     if(evaluateFunction(txtFunction.text.toString())) {
-                        integrationTasks?.forEach { it.cancel(true) }
-                        integrationTasks?.clear()
 
-                        val adapt = AsyncAdaptiveIntegration()
-                        integrationTasks?.add(adapt)
-                        adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), lower, upper, 0.001, object : OnAdaptiveIntegrationCompleted {
-                            override fun onAdaptiveIntegrationCompleted(result: Double?) {
-                                editText.setText("From %.2f to %.2f: %.4f".format(lower,upper,result))
-                            }
-                        })
+                        startAsyncIntegration(lower,upper)
 
                         functionValuesTasks?.forEach{it.cancel(true)}
                         functionValuesTasks?.clear()
@@ -95,6 +88,28 @@ class MainActivity : AppCompatActivity() {
             return false
         }
         return true
+    }
+
+    private fun startAsyncIntegration(a : Double, b : Double){
+        integrationTasks?.forEach { it.cancel(true) }
+        integrationTasks?.clear()
+
+        val list = mutableListOf<Double>()
+
+        for(i in 0..NUMBER_OF_TASKS-1){
+            val adapt = AsyncAdaptiveIntegration()
+            integrationTasks?.add(adapt)
+            val a1 = a + (((b-a) / NUMBER_OF_TASKS) * i)
+            val b1 = a + (((b-a) / NUMBER_OF_TASKS) * (i + 1))
+            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, 0.0001, object : OnAdaptiveIntegrationCompleted {
+                override fun onAdaptiveIntegrationCompleted(result: Double?,sumList : MutableList<Double>) {
+                    if(sumList?.count() == NUMBER_OF_TASKS) {
+                        editText.setText("[%.2f..%.2f]: %.4f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
+                        list.clear()
+                    }
+                }
+            },list)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
