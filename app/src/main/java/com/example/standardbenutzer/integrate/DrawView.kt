@@ -8,6 +8,9 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ScaleGestureDetector
+import android.view.GestureDetector.SimpleOnGestureListener
+
+
 
 
 
@@ -24,6 +27,7 @@ class DrawView : View{
     private var listener: UpdatedBoundsListener? = null
     private var yPoints = listOf<Int>()
     private var scaleDetector : ScaleGestureDetector? = null
+    private var leftXBorder = 0
 
     constructor(context:Context) : super(context) {
         paint.color = Color.BLACK
@@ -100,6 +104,10 @@ class DrawView : View{
 
     fun getScaleFactor() : Float {
         return this.divFac
+    }
+
+    fun getXStart() : Int {
+        return this.leftXBorder
     }
 
     private fun drawBounds(canvas : Canvas?){

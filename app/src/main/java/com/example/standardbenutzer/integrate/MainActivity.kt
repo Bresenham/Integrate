@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
         val values = AsyncFunctionValues()
         functionValuesTasks?.add(values)
-        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor().toDouble(), txtFunction.text.toString(), object : OnFunctionCalculationCompleted {
+        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor().toDouble(), drawView.getXStart(),txtFunction.text.toString(), object : OnFunctionCalculationCompleted {
             override fun onFunctionCalcCompleted(vars: List<Int>?) {
                 if (vars!!.count() > 0) {
                     drawView.updateFunction(vars)
