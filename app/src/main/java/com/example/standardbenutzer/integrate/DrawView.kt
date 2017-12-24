@@ -22,7 +22,6 @@ class DrawView : View{
     private var upperBound = 0
     private var divFac = 1f
     private var listener: UpdatedBoundsListener? = null
-    private var xPoints = listOf<Int>()
     private var yPoints = listOf<Int>()
     private var scaleDetector : ScaleGestureDetector? = null
 
@@ -42,18 +41,19 @@ class DrawView : View{
 
     override fun onDraw(canvas: Canvas?) {
         paint.color = Color.parseColor("#FAFAFA")
-        canvas?.drawRect(0f,0f,canvas?.width!!.toFloat(),canvas?.height!!.toFloat(),paint)
+        canvas?.drawRect(0f,0f,canvas.width.toFloat(),canvas.height.toFloat(),paint)
         paint.color = Color.BLACK
-        for(i in 0 until xPoints.size-2){
-            val startX = xPoints[i].toFloat()
+        if(yPoints.count() == 0)
+            return
+        for(i in 0 until this.width-2){
             val startY = canvas?.height!!.div(2) - yPoints[i]
-            val endX = xPoints[i+1].toFloat()
-            val endY = canvas?.height!!.div(2) - yPoints[i+1]
+            val endX = (i+1).toFloat()
+            val endY = canvas.height.div(2) - yPoints[i+1]
             paint.color = Color.BLACK
-            canvas?.drawLine(startX,startY.toFloat(),endX,endY.toFloat(), paint)
-            if(startX in upperBound..lowerBound && endX in upperBound..lowerBound){
+            canvas.drawLine(i.toFloat(),startY.toFloat(),endX,endY.toFloat(), paint)
+            if(i in upperBound..lowerBound && endX in upperBound..lowerBound){
                 paint.color = Color.parseColor("#ff4949")
-                canvas?.drawRect(startX,startY.toFloat(),endX,canvas?.height!!.div(2).toFloat(),paint)
+                canvas.drawRect(i.toFloat(),startY.toFloat(),endX,canvas.height.div(2).toFloat(),paint)
             }
         }
         drawBounds(canvas)
@@ -70,7 +70,7 @@ class DrawView : View{
             upperBound = x.toInt()
         }
 
-        prevX = x!!.toInt()
+        prevX = x.toInt()
         scaleDetector?.onTouchEvent(event)
         listener?.onBoundsUpdated(mutableListOf(lowerBound.toDouble().minus(this.width.div(2)).div(divFac),upperBound.toDouble().minus(this.width.div(2)).div(divFac)))
         this.invalidate()
@@ -88,15 +88,13 @@ class DrawView : View{
             }
             divFac = Math.max(1.0f, Math.min(divFac, 1000.0f))
 
-            System.out.println("SCALE FACTOR: $divFac")
             invalidate()
             return true
         }
     }
 
-    fun updateFunction(dataPoints : Array<List<Int>>){
-        xPoints = dataPoints[0]
-        yPoints = dataPoints[1]
+    fun updateFunction(dataPoints : List<Int>){
+        yPoints = dataPoints
         this.invalidate()
     }
 
@@ -106,11 +104,11 @@ class DrawView : View{
 
     private fun drawBounds(canvas : Canvas?){
         paint.color = Color.BLUE
-        canvas?.drawLine(lowerBound.toFloat(),canvas?.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText("%.2f".format(lowerBound.toDouble().minus(this.width.div(2)).div(divFac)),lowerBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
+        canvas?.drawLine(lowerBound.toFloat(),canvas.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
+        canvas?.drawText("%.2f".format(lowerBound.toDouble().minus(this.width.div(2)).div(divFac)),lowerBound.toFloat(),canvas.height.div(2).toFloat(),paint)
 
-        canvas?.drawLine(upperBound.toFloat(),canvas?.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText("%.2f".format(upperBound.toDouble().minus(this.width.div(2)).div(divFac)),upperBound.toFloat(),canvas?.height.div(2).toFloat(),paint)
+        canvas?.drawLine(upperBound.toFloat(),canvas.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
+        canvas?.drawText("%.2f".format(upperBound.toDouble().minus(this.width.div(2)).div(divFac)),upperBound.toFloat(),canvas.height.div(2).toFloat(),paint)
     }
 
     interface UpdatedBoundsListener {

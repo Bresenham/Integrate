@@ -35,18 +35,7 @@ class MainActivity : AppCompatActivity() {
 
                         startAsyncIntegration(lower,upper)
 
-                        functionValuesTasks?.forEach{it.cancel(true)}
-                        functionValuesTasks?.clear()
-
-                        val values = AsyncFunctionValues()
-                        functionValuesTasks?.add(values)
-                        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,drawView.width, drawView.getScaleFactor().toDouble(), txtFunction.text.toString(), object : OnFunctionCalculationCompleted {
-                            override fun onFunctionCalcCompleted(vars: Array<List<Int>>?) {
-                                if (vars!![0].count() > 0) {
-                                    drawView.updateFunction(vars)
-                                }
-                            }
-                        })
+                        startAsyncFuncCalc()
                     }
                 }
             }
@@ -55,18 +44,7 @@ class MainActivity : AppCompatActivity() {
         txtFunction.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(p0: Editable?) {
                     if(evaluateFunction(txtFunction.text.toString())) {
-                        functionValuesTasks?.forEach { it.cancel(true) }
-                        functionValuesTasks?.clear()
-
-                        val values = AsyncFunctionValues()
-                        functionValuesTasks?.add(values)
-                        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,drawView.width, drawView.getScaleFactor().toDouble(), txtFunction.text.toString(), object : OnFunctionCalculationCompleted {
-                            override fun onFunctionCalcCompleted(vars: Array<List<Int>>?) {
-                                if (vars!![0].count() > 0) {
-                                    drawView.updateFunction(vars)
-                                }
-                            }
-                        })
+                        startAsyncFuncCalc()
                     }
                 }
 
@@ -101,15 +79,30 @@ class MainActivity : AppCompatActivity() {
             integrationTasks?.add(adapt)
             val a1 = a + (((b-a) / NUMBER_OF_TASKS) * i)
             val b1 = a + (((b-a) / NUMBER_OF_TASKS) * (i + 1))
-            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, 0.0001, object : OnAdaptiveIntegrationCompleted {
-                override fun onAdaptiveIntegrationCompleted(result: Double?,sumList : MutableList<Double>) {
-                    if(sumList?.count() == NUMBER_OF_TASKS) {
+            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, 0.01, object : OnAdaptiveIntegrationCompleted {
+                override fun onAdaptiveIntegrationCompleted(result: Double?, sumList : MutableList<Double>) {
+                    if(sumList.count() == NUMBER_OF_TASKS) {
                         editText.setText("[%.2f..%.2f]: %.4f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
                         list.clear()
                     }
                 }
             },list)
         }
+    }
+
+    private fun startAsyncFuncCalc(){
+        functionValuesTasks?.forEach { it.cancel(true) }
+        functionValuesTasks?.clear()
+
+        val values = AsyncFunctionValues()
+        functionValuesTasks?.add(values)
+        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor().toDouble(), txtFunction.text.toString(), object : OnFunctionCalculationCompleted {
+            override fun onFunctionCalcCompleted(vars: List<Int>?) {
+                if (vars!!.count() > 0) {
+                    drawView.updateFunction(vars)
+                }
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
