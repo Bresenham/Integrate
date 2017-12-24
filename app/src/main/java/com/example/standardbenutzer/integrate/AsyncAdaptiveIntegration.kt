@@ -36,7 +36,11 @@ class AsyncAdaptiveIntegration : AsyncTask<Any,Int,Double> {
     private fun f(x : Double) : Double{
         var math = MathEval()
         math.setVariable("x",x)
-        return math.evaluate(exp)
+        try {
+            return math.evaluate(exp)
+        } catch (e : Exception){
+            return 0.0
+        }
     }
 
     private fun adativeIntegration(a : Double, b : Double, err : Double) : Double{

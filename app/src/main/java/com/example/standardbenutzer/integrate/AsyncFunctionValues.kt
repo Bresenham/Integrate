@@ -20,17 +20,18 @@ class AsyncFunctionValues : AsyncTask<Any,Int,List<Int>> {
         listener = p0[3] as OnFunctionCalculationCompleted
 
         val yPoints : MutableList<Int> = mutableListOf()
-        try {
-            for (i in -drawViewWidth.div(2)..drawViewWidth.div(2)){
-                if(!isCancelled) {
-                    var math = MathEval()
-                    math.setVariable("x", i.div(divFac))
+        for (i in -drawViewWidth.div(2)..drawViewWidth.div(2)){
+            if(!isCancelled) {
+                var math = MathEval()
+                math.setVariable("x", i.div(divFac))
+                try {
                     yPoints.add(math.evaluate(input).toInt())
-                } else
-                    break
-            }
-        } catch(e : Exception){
-            Log.d("ERROR",e.message)
+                } catch (e : Exception){
+                    yPoints.add(-1000)
+                    Log.d("ERROR", e.message)
+                }
+            } else
+                break
         }
         return yPoints
     }
