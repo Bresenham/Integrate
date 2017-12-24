@@ -47,14 +47,14 @@ class DrawView : View{
         paint.color = Color.BLACK
         for(i in 0 until xPoints.size-2){
             val startX = xPoints[i].toFloat()
-            val startY = canvas?.height!! - yPoints[i]
+            val startY = canvas?.height!!.div(2) - yPoints[i]
             val endX = xPoints[i+1].toFloat()
-            val endY = canvas?.height!! - yPoints[i+1]
+            val endY = canvas?.height!!.div(2) - yPoints[i+1]
             paint.color = Color.BLACK
             canvas?.drawLine(startX,startY.toFloat(),endX,endY.toFloat(), paint)
             if(startX in upperBound..lowerBound && endX in upperBound..lowerBound){
                 paint.color = Color.parseColor("#ff4949")
-                canvas?.drawRect(startX,startY.toFloat(),endX,canvas?.height.toFloat(),paint)
+                canvas?.drawRect(startX,startY.toFloat(),endX,canvas?.height!!.div(2).toFloat(),paint)
             }
         }
         drawBounds(canvas)

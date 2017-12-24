@@ -59,13 +59,13 @@ class MainActivity : AppCompatActivity() {
         editText.setText(calc)
     }
 
-    fun calculateFunctionValues(input : String) : Array<List<Int>>{
+    fun calculateFunctionValues(input : String, divFac : Double) : Array<List<Int>>{
         val xPoints : MutableList<Int> = mutableListOf()
         val yPoints : MutableList<Int> = mutableListOf()
         try {
             for (i in -drawView.width.div(2)..drawView.width.div(2)){
                 var math = MathEval()
-                math.setVariable("x",i.div(drawView.getScaleFactor().toDouble()))
+                math.setVariable("x",i.div(divFac))
                 xPoints.add(i + drawView.width.div(2))
                 yPoints.add(math.evaluate(input).toInt())
             }
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateViewWithValues(){
-        var results = calculateFunctionValues(txtFunction.text.toString())
+        var results = calculateFunctionValues(txtFunction.text.toString(),drawView.getScaleFactor().toDouble())
         if(results[0].count() > 0)
             drawView.updateFunction(results)
     }
