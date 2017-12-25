@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 
@@ -17,7 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     private var functionValuesTasks : MutableList<AsyncFunctionValues>? = null
     private var integrationTasks : MutableList<AsyncAdaptiveIntegration>? = null
-    private val NUMBER_OF_TASKS = 4
+    private val NUMBER_OF_TASKS = Runtime.getRuntime().availableProcessors()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
