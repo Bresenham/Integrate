@@ -22,7 +22,7 @@ class AsyncFunctionValues : AsyncTask<Any,Int,List<Int>> {
         listener = p0[4] as OnFunctionCalculationCompleted
 
         val yPoints : MutableList<Int> = mutableListOf()
-        for (i in -drawViewWidth.div(2)+leftXBorder..drawViewWidth.div(2)){
+        for (i in -drawViewWidth.div(2)-leftXBorder..drawViewWidth.div(2)-leftXBorder){
             if(!isCancelled) {
                 var math = MathEval()
                 math.setVariable("x", i.div(divFac))
