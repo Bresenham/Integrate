@@ -22,7 +22,7 @@ class DrawView : View {
     private var upperBound = 0.0
     private var divFac = 1.0
     private var listener: UpdatedBoundsListener? = null
-    private var yPoints = listOf<Int>()
+    private var yPoints : IntArray? = null
     private var scaleDetector : ScaleGestureDetector? = null
     private var gestureDetector : GestureDetectorCompat? = null
     private var leftXBorder = 0
@@ -47,12 +47,12 @@ class DrawView : View {
         paint.color = Color.parseColor("#FAFAFA")
         canvas?.drawRect(0f,0f,canvas.width.toFloat(),canvas.height.toFloat(),paint)
         paint.color = Color.BLACK
-        if(yPoints.count() == 0)
+        if(yPoints == null)
             return
         for(i in 0 until this.width-2){
-            val startY = canvas?.height!!.div(2) - yPoints[i]
+            val startY = canvas?.height!!.div(2) - yPoints!![i]
             val endX = i+1
-            val endY = canvas.height.div(2) - yPoints[i+1]
+            val endY = canvas.height.div(2) - yPoints!![i+1]
             paint.color = Color.BLACK
             canvas.drawLine(i.toFloat(),startY.toFloat(),endX.toFloat(),endY.toFloat(), paint)
             if(i in upperBound..lowerBound && endX in upperBound..lowerBound){
@@ -141,7 +141,7 @@ class DrawView : View {
         }
     }
 
-    fun updateFunction(dataPoints : List<Int>){
+    fun updateFunction(dataPoints : IntArray){
         yPoints = dataPoints
         this.invalidate()
     }

@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
             integrationTasks?.add(adapt)
             val a1 = a + (((b-a) / NUMBER_OF_TASKS) * i)
             val b1 = a + (((b-a) / NUMBER_OF_TASKS) * (i + 1))
-            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, 0.01, object : OnAdaptiveIntegrationCompleted {
+            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, 0.001, object : OnAdaptiveIntegrationCompleted {
                 override fun onAdaptiveIntegrationCompleted(result: Double?, sumList : MutableList<Double>) {
                     if(sumList.count() == NUMBER_OF_TASKS) {
                         editText.setText("[%.2f..%.2f]: %.4f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
@@ -94,12 +94,19 @@ class MainActivity : AppCompatActivity() {
         functionValuesTasks?.forEach { it.cancel(true) }
         functionValuesTasks?.clear()
 
+        //-drawViewWidth.div(2)-leftXBorder..drawViewWidth.div(2)-leftXBorder)
+        var a = -drawView.width.div(2) - drawView.getXStart()
+        var b = drawView.width.div(2) - drawView.getXStart()
+
         val values = AsyncFunctionValues()
         functionValuesTasks?.add(values)
-        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor(), drawView.getXStart(),txtFunction.text.toString(), object : OnFunctionCalculationCompleted {
-            override fun onFunctionCalcCompleted(vars: List<Int>?) {
-                if (vars!!.count() > 0) {
-                    drawView.updateFunction(vars)
+        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor(), txtFunction.text.toString(), a, b, object : OnFunctionCalculationCompleted {
+            override fun onFunctionCalcCompleted(vars: IntArray) {
+                for(i in 0 until vars.size){
+                    if(vars[i] != 0){
+                        drawView.updateFunction(vars)
+                        break
+                    }
                 }
             }
         })
