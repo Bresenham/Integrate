@@ -21,7 +21,8 @@ class DrawView : View {
     private var lowerBound = 0.0
     private var upperBound = 0.0
     private var divFac = 1.0
-    private var listener: UpdatedBoundsListener? = null
+    private var updatedBoundsListener: UpdatedBoundsListener? = null
+    private var updatedScreenListener : UpdatedScreenListener? = null
     private var yPoints : IntArray? = null
     private var scaleDetector : ScaleGestureDetector? = null
     private var gestureDetector : GestureDetectorCompat? = null
@@ -77,7 +78,7 @@ class DrawView : View {
         prevX = x.toInt()
         scaleDetector?.onTouchEvent(event)
         gestureDetector?.onTouchEvent(event)
-        listener?.onBoundsUpdated(mutableListOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac,(upperBound - leftXBorder - (this.width / 2)) / divFac))
+        updatedBoundsListener?.onBoundsUpdated(mutableListOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac,(upperBound - leftXBorder - (this.width / 2)) / divFac))
         this.invalidate()
         return true
     }
@@ -100,13 +101,14 @@ class DrawView : View {
                     if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffX > 0) {
                             Log.d("SWIPE", "Detected Swipe Right.")
-                            leftXBorder += 25
+                            leftXBorder += (velocityX / 100).toInt()
                             //onSwipeRight()
                         } else {
                             Log.d("SWIPE", "Detected Swipe Left.")
-                            leftXBorder -= 25
+                            leftXBorder += (velocityX / 100).toInt()
                             //onSwipeLeft()
                         }
+                        updatedScreenListener?.onScreenUpdated()
                         result = true
                     }
                 } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
@@ -136,6 +138,7 @@ class DrawView : View {
             }
             divFac = Math.max(1.0, Math.min(divFac, 1000.0))
 
+            updatedScreenListener?.onScreenUpdated()
             invalidate()
             return true
         }
@@ -168,6 +171,14 @@ class DrawView : View {
     }
 
     fun setUpdatedBoundsListener(listener : UpdatedBoundsListener){
-        this.listener = listener
+        this.updatedBoundsListener = listener
+    }
+
+    interface UpdatedScreenListener {
+        fun onScreenUpdated()
+    }
+
+    fun setUpdatedScreenListener(listener : UpdatedScreenListener) {
+        this.updatedScreenListener = listener
     }
 }

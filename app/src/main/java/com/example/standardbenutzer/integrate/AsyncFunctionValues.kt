@@ -44,7 +44,6 @@ class AsyncFunctionValues : AsyncTask<Any,Int,IntArray> {
 
     override fun onPostExecute(result: IntArray) {
         super.onPostExecute(result)
-        System.out.println("Did Function Value Calculation.")
         listener?.onFunctionCalcCompleted(result, funcStart)
     }
 }

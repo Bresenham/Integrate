@@ -33,14 +33,17 @@ class MainActivity : AppCompatActivity() {
                     val lower = Math.min(bounds[0], bounds[1])
 
                     if(evaluateFunction(txtFunction.text.toString())) {
-
                         startAsyncIntegration(lower,upper)
-
-                        startAsyncFuncCalc()
                     }
                 }
             }
         )
+
+        drawView.setUpdatedScreenListener(object : DrawView.UpdatedScreenListener{
+            override fun onScreenUpdated() {
+                startAsyncFuncCalc()
+            }
+        })
 
         txtFunction.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(p0: Editable?) {
