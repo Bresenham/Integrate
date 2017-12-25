@@ -49,7 +49,7 @@ class DrawView : View {
         paint.color = Color.BLACK
         if(yPoints == null)
             return
-        for(i in 0 until this.width-2){
+        for(i in 0 until yPoints!!.size-1){
             val startY = canvas?.height!!.div(2) - yPoints!![i]
             val endX = i+1
             val endY = canvas.height.div(2) - yPoints!![i+1]

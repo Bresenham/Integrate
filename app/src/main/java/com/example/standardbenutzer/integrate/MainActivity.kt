@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 
@@ -98,18 +99,27 @@ class MainActivity : AppCompatActivity() {
         var a = -drawView.width.div(2) - drawView.getXStart()
         var b = drawView.width.div(2) - drawView.getXStart()
 
-        val values = AsyncFunctionValues()
-        functionValuesTasks?.add(values)
-        values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor(), txtFunction.text.toString(), a, b, object : OnFunctionCalculationCompleted {
-            override fun onFunctionCalcCompleted(vars: IntArray) {
-                for(i in 0 until vars.size){
-                    if(vars[i] != 0){
-                        drawView.updateFunction(vars)
-                        break
-                    }
+        val h = (b-a) / NUMBER_OF_TASKS
+
+        val sequNumbers = mutableListOf<Int>()
+        val fullArray = IntArray(b-a)
+
+        for(i in 0 until NUMBER_OF_TASKS) {
+            val a1 = a + h * i
+            val b1 = a + h * (i+1)
+
+            val values = AsyncFunctionValues()
+            functionValuesTasks?.add(values)
+            values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor(), txtFunction.text.toString(), a1, b1, object : OnFunctionCalculationCompleted {
+                override fun onFunctionCalcCompleted(vars: IntArray, sequNumber : Int) {
+                    sequNumbers.add(sequNumber)
+                    for(i in 0 until h)
+                        fullArray[i-a+sequNumber] = vars[i]
+                    if(sequNumbers.count() == NUMBER_OF_TASKS)
+                        drawView.updateFunction(fullArray)
                 }
-            }
-        })
+            })
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
