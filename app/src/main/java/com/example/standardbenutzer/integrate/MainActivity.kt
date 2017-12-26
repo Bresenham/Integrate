@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         drawView.setUpdatedScreenListener(object : DrawView.UpdatedScreenListener{
             override fun onScreenUpdated() {
+                stopAsyncIntegration()
                 startAsyncFuncCalc()
             }
         })
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         txtFunction.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(p0: Editable?) {
                     if(evaluateFunction(txtFunction.text.toString())) {
+                        stopAsyncIntegration()
                         startAsyncFuncCalc()
                     }
                 }
@@ -78,8 +80,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startAsyncIntegration(a : Double, b : Double){
-        integrationTasks?.forEach { it.cancel(true) }
-        integrationTasks?.clear()
+        stopAsyncIntegration()
 
         progressBar.visibility = View.VISIBLE
 
@@ -126,13 +127,19 @@ class MainActivity : AppCompatActivity() {
             values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor(), txtFunction.text.toString(), a1, b1, object : OnFunctionCalculationCompleted {
                 override fun onFunctionCalcCompleted(vars: IntArray, sequNumber : Int) {
                     sequNumbers.add(sequNumber)
-                    for(i in 0 until h)
-                        fullArray[i-a+sequNumber] = vars[i]
-                    if(sequNumbers.count() == NUMBER_OF_TASKS)
+                    for(k in 0 until h)
+                        fullArray[k-a+sequNumber] = vars[k]
+                    if(sequNumbers.count() == NUMBER_OF_TASKS) {
                         drawView.updateFunction(fullArray)
+                    }
                 }
             })
         }
+    }
+
+    private fun stopAsyncIntegration(){
+        integrationTasks?.forEach { it.cancel(true) }
+        integrationTasks?.clear()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {

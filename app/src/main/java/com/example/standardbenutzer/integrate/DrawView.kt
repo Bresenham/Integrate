@@ -60,21 +60,20 @@ class DrawView : View {
         val x = event?.x
 
         val dX = x?.minus(prevX)!!
-        var updateWorthy = true
 
         when {
             dX > 10 -> upperBound = x.toDouble()
             dX < -10 -> lowerBound = x.toDouble()
-            else -> updateWorthy = false
         }
 
-        if(updateWorthy) {
-            prevX = x.toInt()
-            scaleDetector?.onTouchEvent(event)
-            gestureDetector?.onTouchEvent(event)
-            updatedBoundsListener?.onBoundsUpdated(mutableListOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac, (upperBound - leftXBorder - (this.width / 2)) / divFac))
-            this.invalidate()
-        }
+        scaleDetector?.onTouchEvent(event)
+        gestureDetector?.onTouchEvent(event)
+
+        prevX = x.toInt()
+
+        updatedBoundsListener?.onBoundsUpdated(mutableListOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac, (upperBound - leftXBorder - (this.width / 2)) / divFac))
+        this.invalidate()
+
         return true
     }
 
@@ -97,15 +96,16 @@ class DrawView : View {
                         leftXBorder += (velocityX / 100).toInt()
                         updatedScreenListener?.onScreenUpdated()
                         result = true
+                        invalidate()
                     }
                 } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
                     upperYBorder += (velocityY / 100).toInt()
                     result = true
+                    invalidate()
                 }
             } catch (exception: Exception) {
                 exception.printStackTrace()
             }
-            invalidate()
             return result
         }
     }
