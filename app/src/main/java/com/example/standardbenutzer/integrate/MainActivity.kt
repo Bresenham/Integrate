@@ -9,6 +9,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -23,6 +24,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        progressBar.max = NUMBER_OF_TASKS
+        progressBar.progress = 0
+        progressBar.visibility = View.GONE
 
         functionValuesTasks = mutableListOf()
         integrationTasks = mutableListOf()
@@ -76,6 +81,8 @@ class MainActivity : AppCompatActivity() {
         integrationTasks?.forEach { it.cancel(true) }
         integrationTasks?.clear()
 
+        progressBar.visibility = View.VISIBLE
+
         val list = mutableListOf<Double>()
 
         for(i in 0..NUMBER_OF_TASKS-1){
@@ -85,9 +92,12 @@ class MainActivity : AppCompatActivity() {
             val b1 = a + (((b-a) / NUMBER_OF_TASKS) * (i + 1))
             adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, 0.001, object : OnAdaptiveIntegrationCompleted {
                 override fun onAdaptiveIntegrationCompleted(result: Double?, sumList : MutableList<Double>) {
+                    progressBar.progress = progressBar.progress + 1
                     if(sumList.count() == NUMBER_OF_TASKS) {
                         editText.setText("[%.2f..%.2f]: %.4f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
                         list.clear()
+                        progressBar.progress = 0
+                        progressBar.visibility = View.GONE
                     }
                 }
             },list)

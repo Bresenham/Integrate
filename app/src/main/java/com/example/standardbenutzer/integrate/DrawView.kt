@@ -48,9 +48,9 @@ class DrawView : View {
             val endY = canvas.height.div(2) - yPoints!![i+1] - upperYBorder
             paint.color = Color.BLACK
             canvas.drawLine(i.toFloat(),startY.toFloat(),endX.toFloat(),endY.toFloat(), paint)
-            if(i in upperBound..lowerBound && endX in upperBound..lowerBound){
+            if(i in lowerBound..upperBound && endX in lowerBound..upperBound){
                 paint.color = Color.parseColor("#ff4949")
-                canvas.drawRect(i.toFloat(),startY.toFloat(),endX.toFloat(),canvas.height.div(2).toFloat(),paint)
+                canvas.drawRect(i.toFloat(),startY.toFloat(),endX.toFloat(),canvas.height.div(2).minus(upperYBorder).toFloat(),paint)
             }
         }
         drawBounds(canvas)
@@ -59,19 +59,22 @@ class DrawView : View {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         val x = event?.x
 
-        val dX = x?.minus(prevX)
+        val dX = x?.minus(prevX)!!
+        var updateWorthy = true
 
-        if(dX!! > 0){
-            lowerBound = x.toDouble()
-        } else{
-            upperBound = x.toDouble()
+        when {
+            dX > 10 -> upperBound = x.toDouble()
+            dX < -10 -> lowerBound = x.toDouble()
+            else -> updateWorthy = false
         }
 
-        prevX = x.toInt()
-        scaleDetector?.onTouchEvent(event)
-        gestureDetector?.onTouchEvent(event)
-        updatedBoundsListener?.onBoundsUpdated(mutableListOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac,(upperBound - leftXBorder - (this.width / 2)) / divFac))
-        this.invalidate()
+        if(updateWorthy) {
+            prevX = x.toInt()
+            scaleDetector?.onTouchEvent(event)
+            gestureDetector?.onTouchEvent(event)
+            updatedBoundsListener?.onBoundsUpdated(mutableListOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac, (upperBound - leftXBorder - (this.width / 2)) / divFac))
+            this.invalidate()
+        }
         return true
     }
 

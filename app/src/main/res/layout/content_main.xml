@@ -54,22 +54,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/topView"
-            android:orientation="vertical">
+            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/editText"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:clickable="false"
+                android:cursorVisible="false"
                 android:ems="10"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
                 android:inputType="textMultiLine"
                 android:selectAllOnFocus="false"
                 android:singleLine="true"
-                android:clickable="false"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
                 android:text="" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleHorizontal"
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
         </LinearLayout>
 
@@ -82,7 +89,7 @@
 
             <com.example.standardbenutzer.integrate.DrawView
                 android:id="@+id/drawView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_below="@+id/topView"
