@@ -27,21 +27,13 @@ class DrawView : View {
     private var scaleDetector : ScaleGestureDetector? = null
     private var gestureDetector : GestureDetectorCompat? = null
     private var leftXBorder = 0
+    private var upperYBorder = 0
 
     constructor(context:Context) : super(context) {
-        paint.color = Color.BLACK
-        paint.isAntiAlias = true
-        paint.strokeWidth = 2f
-        scaleDetector = ScaleGestureDetector(context, ScaleListener())
-        gestureDetector = GestureDetectorCompat(this.context,GestureListener())
+        init()
     }
-
     constructor(context:Context,attr: AttributeSet) : super(context,attr) {
-        paint.color = Color.BLACK
-        paint.isAntiAlias = true
-        paint.strokeWidth = 2f
-        scaleDetector = ScaleGestureDetector(context, ScaleListener())
-        gestureDetector = GestureDetectorCompat(this.context,GestureListener())
+        init()
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -51,9 +43,9 @@ class DrawView : View {
         if(yPoints == null)
             return
         for(i in 0 until yPoints!!.size-1){
-            val startY = canvas?.height!!.div(2) - yPoints!![i]
+            val startY = canvas?.height!!.div(2) - yPoints!![i] - upperYBorder
             val endX = i+1
-            val endY = canvas.height.div(2) - yPoints!![i+1]
+            val endY = canvas.height.div(2) - yPoints!![i+1] - upperYBorder
             paint.color = Color.BLACK
             canvas.drawLine(i.toFloat(),startY.toFloat(),endX.toFloat(),endY.toFloat(), paint)
             if(i in upperBound..lowerBound && endX in upperBound..lowerBound){
@@ -95,28 +87,16 @@ class DrawView : View {
         override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
             var result = false
             try {
-                val diffY = e2.getY() - e1.getY()
-                val diffX = e2.getX() - e1.getX()
+                val diffY = e2.y - e1.y
+                val diffX = e2.x - e1.x
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                        if (diffX > 0) {
-                            Log.d("SWIPE", "Detected Swipe Right.")
-                            leftXBorder += (velocityX / 100).toInt()
-                            //onSwipeRight()
-                        } else {
-                            Log.d("SWIPE", "Detected Swipe Left.")
-                            leftXBorder += (velocityX / 100).toInt()
-                            //onSwipeLeft()
-                        }
+                        leftXBorder += (velocityX / 100).toInt()
                         updatedScreenListener?.onScreenUpdated()
                         result = true
                     }
                 } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-                    if (diffY > 0) {
-                        //onSwipeBottom()
-                    } else {
-                        //onSwipeTop()
-                    }
+                    upperYBorder += (velocityY / 100).toInt()
                     result = true
                 }
             } catch (exception: Exception) {
@@ -164,6 +144,14 @@ class DrawView : View {
 
         canvas?.drawLine(upperBound.toFloat(),canvas.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
         canvas?.drawText("%.2f".format((upperBound - leftXBorder - (this.width / 2)) / divFac),upperBound.toFloat(),canvas.height.div(2).toFloat(),paint)
+    }
+
+    private fun init(){
+        paint.color = Color.BLACK
+        paint.isAntiAlias = true
+        paint.strokeWidth = 3f
+        scaleDetector = ScaleGestureDetector(context, ScaleListener())
+        gestureDetector = GestureDetectorCompat(this.context,GestureListener())
     }
 
     interface UpdatedBoundsListener {

@@ -1,5 +1,6 @@
 package com.example.standardbenutzer.integrate
 
+import android.content.res.Configuration
 import android.os.AsyncTask
 import android.os.Bundle
 
@@ -122,6 +123,11 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        startAsyncFuncCalc()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
