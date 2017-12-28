@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.support.v4.view.GestureDetectorCompat
 import android.util.AttributeSet
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -57,14 +56,15 @@ class DrawView : View {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        val x = event?.x
+        val x = event?.x!!
 
-        val dX = x?.minus(prevX)!!
+        val dXLower = x - lowerBound
+        val dXUpper = x - upperBound
 
-        when {
-            dX > 10 -> upperBound = x.toDouble()
-            dX < -10 -> lowerBound = x.toDouble()
-        }
+        if(Math.abs(dXLower) < Math.abs(dXUpper))
+            lowerBound = x.toDouble()
+        else
+            upperBound = x.toDouble()
 
         scaleDetector?.onTouchEvent(event)
         gestureDetector?.onTouchEvent(event)

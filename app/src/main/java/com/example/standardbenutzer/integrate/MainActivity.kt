@@ -10,6 +10,7 @@ import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.SeekBar
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -19,6 +20,7 @@ class MainActivity : AppCompatActivity() {
     private var functionValuesTasks : MutableList<AsyncFunctionValues>? = null
     private var integrationTasks : MutableList<AsyncAdaptiveIntegration>? = null
     private val NUMBER_OF_TASKS = Runtime.getRuntime().availableProcessors()
+    private var precision = 0.001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,6 +68,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         )
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+                when(p0?.progress){
+                    0 -> precision = 0.01
+                    1 -> precision = 0.001
+                    2 -> precision = 0.0001
+                }
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+            }
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+            }
+        })
     }
 
     private fun evaluateFunction(input : String) : Boolean{
@@ -91,7 +107,7 @@ class MainActivity : AppCompatActivity() {
             integrationTasks?.add(adapt)
             val a1 = a + (((b-a) / NUMBER_OF_TASKS) * i)
             val b1 = a + (((b-a) / NUMBER_OF_TASKS) * (i + 1))
-            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, 0.001, object : OnAdaptiveIntegrationCompleted {
+            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, precision, object : OnAdaptiveIntegrationCompleted {
                 override fun onAdaptiveIntegrationCompleted(result: Double?, sumList : MutableList<Double>) {
                     progressBar.progress = progressBar.progress + 1
                     if(sumList.count() == NUMBER_OF_TASKS) {

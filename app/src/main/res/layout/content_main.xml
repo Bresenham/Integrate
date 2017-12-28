@@ -17,13 +17,13 @@
 
         <LinearLayout
             android:id="@+id/topView"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/editText4"
-                android:layout_width="wrap_content"
+                android:layout_width="83dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_weight="1"
@@ -32,20 +32,7 @@
                 android:ems="10"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                android:inputType="textPersonName"
                 android:text="Function:" />
-
-            <EditText
-                android:id="@+id/txtFunction"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_weight="1"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:singleLine="true"
-                android:text="e^x"
-                android:textAlignment="viewStart" />
 
         </LinearLayout>
 
@@ -91,11 +78,36 @@
                 android:id="@+id/drawView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
                 android:layout_below="@+id/topView"
                 android:layout_centerVertical="true"
                 android:layout_weight="1" />
         </LinearLayout>
+
+        <EditText
+            android:id="@+id/txtFunction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/topView"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:singleLine="true"
+            android:text="e^x"
+            android:textAlignment="viewStart" />
+
+        <SeekBar
+            android:id="@+id/seekBar"
+            style="@android:style/Widget.DeviceDefault.SeekBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/buttonView"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="13dp"
+            android:layout_toEndOf="@+id/txtFunction"
+            android:max="2"
+            android:progress="1" />
 
     </RelativeLayout>
 
