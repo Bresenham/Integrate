@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -15,13 +16,16 @@ import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.math.BigDecimal
+import java.util.concurrent.RejectedExecutionException
 
 class MainActivity : AppCompatActivity() {
 
     private var functionValuesTasks : MutableList<AsyncFunctionValues>? = null
     private var integrationTasks : MutableList<AsyncAdaptiveIntegration>? = null
     private val NUMBER_OF_TASKS = Runtime.getRuntime().availableProcessors()
-    private var precision = 0.001
+    private var precision = 0.0001
+    private var prevUpperBound = 0.0
+    private var prevLowerBound = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,11 +41,11 @@ class MainActivity : AppCompatActivity() {
 
         drawView.setUpdatedBoundsListener( object : DrawView.UpdatedBoundsListener {
                 override fun onBoundsUpdated(bounds : DoubleArray) {
-                    val upper = Math.max(bounds[0], bounds[1])
-                    val lower = Math.min(bounds[0], bounds[1])
+                    prevUpperBound = Math.max(bounds[0], bounds[1])
+                    prevLowerBound = Math.min(bounds[0], bounds[1])
 
                     if(evaluateFunction(txtFunction.text.toString())) {
-                        startAsyncIntegration(BigDecimal(lower).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble(),BigDecimal(upper).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble())
+                        startAsyncIntegration(BigDecimal(prevLowerBound).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble(),BigDecimal(prevUpperBound).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble())
                     }
                 }
             }
@@ -57,8 +61,8 @@ class MainActivity : AppCompatActivity() {
         txtFunction.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(p0: Editable?) {
                     if(evaluateFunction(txtFunction.text.toString())) {
-                        stopAsyncIntegration()
                         startAsyncFuncCalc()
+                        startAsyncIntegration(prevLowerBound,prevUpperBound)
                     }
                 }
 
@@ -72,10 +76,11 @@ class MainActivity : AppCompatActivity() {
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                 when(p0?.progress){
-                    0 -> precision = 0.01
-                    1 -> precision = 0.001
-                    2 -> precision = 0.0001
+                    0 -> precision = 0.0001
+                    1 -> precision = 0.000001
+                    2 -> precision = 0.00000001
                 }
+                startAsyncIntegration(prevLowerBound,prevUpperBound)
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -98,7 +103,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startAsyncIntegration(a : Double, b : Double){
         stopAsyncIntegration()
-
+        
         progressBar.visibility = View.VISIBLE
 
         val list = mutableListOf<Double>()
@@ -108,24 +113,26 @@ class MainActivity : AppCompatActivity() {
             integrationTasks?.add(adapt)
             val a1 = a + (((b-a) / NUMBER_OF_TASKS) * i)
             val b1 = a + (((b-a) / NUMBER_OF_TASKS) * (i + 1))
-            adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,txtFunction.text.toString(), a1, b1, precision, object : OnAdaptiveIntegrationCompleted {
-                override fun onAdaptiveIntegrationCompleted(result: Double?, sumList : MutableList<Double>) {
-                    progressBar.progress = progressBar.progress + 1
-                    if(sumList.count() == NUMBER_OF_TASKS) {
-                        editText.setText("[%.2f..%.2f]: %.4f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
-                        list.clear()
-                        progressBar.progress = 0
-                        progressBar.visibility = View.GONE
+            try {
+                adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, txtFunction.text.toString(), a1, b1, precision, object : OnAdaptiveIntegrationCompleted {
+                    override fun onAdaptiveIntegrationCompleted(result: Double?, sumList: MutableList<Double>) {
+                        progressBar.progress = progressBar.progress + 1
+                        if (sumList.count() == NUMBER_OF_TASKS) {
+                            editText.setText("[%.2f..%.2f]: %.8f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
+                            list.clear()
+                            progressBar.progress = 0
+                            progressBar.visibility = View.GONE
+                        }
                     }
-                }
-            },list)
+                }, list)
+            } catch (e : RejectedExecutionException){
+                Log.d("ERROR", e.message)
+            }
         }
     }
 
     private fun startAsyncFuncCalc(){
-        functionValuesTasks?.forEach { it.cancel(true) }
-        functionValuesTasks?.clear()
-
+        stopAsyncFuncCalc()
         //-drawViewWidth.div(2)-leftXBorder..drawViewWidth.div(2)-leftXBorder)
         var a = -drawView.width.div(2) - drawView.getXStart()
         var b = drawView.width.div(2) - drawView.getXStart()
@@ -141,22 +148,31 @@ class MainActivity : AppCompatActivity() {
 
             val values = AsyncFunctionValues()
             functionValuesTasks?.add(values)
-            values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor(), txtFunction.text.toString(), a1, b1, object : OnFunctionCalculationCompleted {
-                override fun onFunctionCalcCompleted(vars: IntArray, sequNumber : Int) {
-                    sequNumbers.add(sequNumber)
-                    for(k in 0 until h)
-                        fullArray[k-a+sequNumber] = vars[k]
-                    if(sequNumbers.count() == NUMBER_OF_TASKS) {
-                        drawView.updateFunction(fullArray)
+            try {
+                values.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, drawView.width, drawView.getScaleFactor(), txtFunction.text.toString(), a1, b1, object : OnFunctionCalculationCompleted {
+                    override fun onFunctionCalcCompleted(vars: IntArray, sequNumber: Int) {
+                        sequNumbers.add(sequNumber)
+                        for (k in 0 until h)
+                            fullArray[k - a + sequNumber] = vars[k]
+                        if (sequNumbers.count() == NUMBER_OF_TASKS) {
+                            drawView.updateFunction(fullArray)
+                        }
                     }
-                }
-            })
+                })
+            } catch(e : RejectedExecutionException){
+                Log.d("ERROR", e.message)
+            }
         }
     }
 
     private fun stopAsyncIntegration(){
         integrationTasks?.forEach { it.cancel(true) }
         integrationTasks?.clear()
+    }
+
+    private fun stopAsyncFuncCalc(){
+        functionValuesTasks?.forEach { it.cancel(true) }
+        functionValuesTasks?.clear()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {

@@ -107,7 +107,7 @@
             android:layout_marginBottom="13dp"
             android:layout_toEndOf="@+id/txtFunction"
             android:max="2"
-            android:progress="1" />
+            android:progress="0" />
 
     </RelativeLayout>
 
