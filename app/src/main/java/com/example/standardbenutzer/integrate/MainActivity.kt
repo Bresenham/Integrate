@@ -14,6 +14,7 @@ import android.widget.SeekBar
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.math.BigDecimal
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,12 +36,12 @@ class MainActivity : AppCompatActivity() {
         integrationTasks = mutableListOf()
 
         drawView.setUpdatedBoundsListener( object : DrawView.UpdatedBoundsListener {
-                override fun onBoundsUpdated(bounds : List<Double>) {
+                override fun onBoundsUpdated(bounds : DoubleArray) {
                     val upper = Math.max(bounds[0], bounds[1])
                     val lower = Math.min(bounds[0], bounds[1])
 
                     if(evaluateFunction(txtFunction.text.toString())) {
-                        startAsyncIntegration(lower,upper)
+                        startAsyncIntegration(BigDecimal(lower).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble(),BigDecimal(upper).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble())
                     }
                 }
             }

@@ -46,24 +46,23 @@ class AsyncAdaptiveIntegration : AsyncTask<Any,Int,Double> {
     private fun adativeIntegration(a : Double, b : Double, err : Double) : Double{
         if(!isCancelled) {
             var h = b.minus(a)
-            val s0 = h * ((1.0 / 6.0) * f(a) + (4.0 / 6.0) * f((a + b) / 2) + (1.0 / 6.0) * f(b))
-            h = (b - a).div(2)
+            val s0 = h * ((1.0 / 6.0) * f(a) + (4.0 / 6.0) * f((a + b) / 2.0) + (1.0 / 6.0) * f(b))
+            h = h.div(2)
             var s1 = 0.0
             for (i in 0..1) {
                 if(!isCancelled) {
                     var a_1 = a + i.times(h)
-                    var b_1 = b + (i + 1).times(h)
-                    s1 += h * ((1.0 / 6.0) * f(a_1) + (4.0 / 6.0) * f((a_1 + b_1) / 2) + (1.0 / 6.0) * f(b_1))
+                    var b_1 = a + (i + 1).times(h)
+                    s1 += h * ((1.0 / 6.0) * f(a_1) + (4.0 / 6.0) * f((a_1 + b_1) / 2.0) + (1.0 / 6.0) * f(b_1))
                 } else
                     break
             }
+
             var e = Math.abs(s1 - s0)
 
             if (e <= err)
                 return s1
-            else {
-                return adativeIntegration(a, (a + b).div(2), err) + adativeIntegration((a + b).div(2), b, err)
-            }
+            return adativeIntegration(a, (a + b).div(2), err) + adativeIntegration((a + b).div(2), b, err)
         } else
             return -1.0
     }

@@ -10,6 +10,8 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ScaleGestureDetector
+import java.math.BigDecimal
+
 /**
  * Created by Standardbenutzer on 22.12.2017.
  */
@@ -71,7 +73,7 @@ class DrawView : View {
 
         prevX = x.toInt()
 
-        updatedBoundsListener?.onBoundsUpdated(mutableListOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac, (upperBound - leftXBorder - (this.width / 2)) / divFac))
+        updatedBoundsListener?.onBoundsUpdated(doubleArrayOf((lowerBound - leftXBorder - (this.width / 2.0)) / divFac, (upperBound - leftXBorder - (this.width / 2)) / divFac))
         this.invalidate()
 
         return true
@@ -143,10 +145,13 @@ class DrawView : View {
     private fun drawBounds(canvas : Canvas?){
         paint.color = Color.BLUE
         canvas?.drawLine(lowerBound.toFloat(),canvas.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText("%.2f".format((lowerBound - leftXBorder - (this.width / 2.0)) / divFac),lowerBound.toFloat(),canvas.height.div(2).toFloat(),paint)
+        val lowerRounded = BigDecimal((lowerBound - leftXBorder - (this.width / 2.0)) / divFac).setScale(2, BigDecimal.ROUND_HALF_UP)
+        var upperRounded = BigDecimal((upperBound - leftXBorder - (this.width / 2.0)) / divFac).setScale(2, BigDecimal.ROUND_HALF_UP)
+
+        canvas?.drawText("$lowerRounded",lowerBound.toFloat(),canvas.height.div(2).toFloat(),paint)
 
         canvas?.drawLine(upperBound.toFloat(),canvas.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
-        canvas?.drawText("%.2f".format((upperBound - leftXBorder - (this.width / 2)) / divFac),upperBound.toFloat(),canvas.height.div(2).toFloat(),paint)
+        canvas?.drawText("$upperRounded",upperBound.toFloat(),canvas.height.div(2).toFloat(),paint)
     }
 
     private fun init(){
@@ -158,7 +163,7 @@ class DrawView : View {
     }
 
     interface UpdatedBoundsListener {
-        fun onBoundsUpdated(bounds : List<Double>)
+        fun onBoundsUpdated(bounds : DoubleArray)
     }
 
     fun setUpdatedBoundsListener(listener : UpdatedBoundsListener){
