@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private var functionValuesTasks : MutableList<AsyncFunctionValues>? = null
     private var integrationTasks : MutableList<AsyncAdaptiveIntegration>? = null
-    private val NUMBER_OF_TASKS = Runtime.getRuntime().availableProcessors()
+    private val NUMBER_OF_TASKS = Runtime.getRuntime().availableProcessors()*2
     private var precision = 0.0001
     private var prevUpperBound = 0.0
     private var prevLowerBound = 0.0
@@ -41,12 +41,11 @@ class MainActivity : AppCompatActivity() {
 
         drawView.setUpdatedBoundsListener( object : DrawView.UpdatedBoundsListener {
                 override fun onBoundsUpdated(bounds : DoubleArray) {
-                    prevUpperBound = Math.max(bounds[0], bounds[1])
-                    prevLowerBound = Math.min(bounds[0], bounds[1])
+                    prevUpperBound = BigDecimal(Math.max(bounds[0], bounds[1])).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble()
+                    prevLowerBound = BigDecimal(Math.min(bounds[0], bounds[1])).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble()
 
-                    if(evaluateFunction(txtFunction.text.toString())) {
-                        startAsyncIntegration(BigDecimal(prevLowerBound).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble(),BigDecimal(prevUpperBound).setScale(2,BigDecimal.ROUND_HALF_UP).toDouble())
-                    }
+                    if(evaluateFunction())
+                        startAsyncIntegration(prevLowerBound,prevUpperBound)
                 }
             }
         )
@@ -60,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         txtFunction.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(p0: Editable?) {
-                    if(evaluateFunction(txtFunction.text.toString())) {
+                    if(evaluateFunction()) {
                         startAsyncFuncCalc()
                         startAsyncIntegration(prevLowerBound,prevUpperBound)
                     }
@@ -80,7 +79,8 @@ class MainActivity : AppCompatActivity() {
                     1 -> precision = 0.000001
                     2 -> precision = 0.00000001
                 }
-                startAsyncIntegration(prevLowerBound,prevUpperBound)
+                if(evaluateFunction())
+                    startAsyncIntegration(prevLowerBound,prevUpperBound)
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -90,11 +90,11 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun evaluateFunction(input : String) : Boolean{
+    private fun evaluateFunction() : Boolean{
         try {
             var math = MathEval()
             math.setVariable("x", 1.0)
-            math.evaluate(input)
+            math.evaluate(txtFunction.text.toString())
         } catch(e:Exception){
             return false
         }
@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startAsyncIntegration(a : Double, b : Double){
         stopAsyncIntegration()
-        
+
         progressBar.visibility = View.VISIBLE
 
         val list = mutableListOf<Double>()

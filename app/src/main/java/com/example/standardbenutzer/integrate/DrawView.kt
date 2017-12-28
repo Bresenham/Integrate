@@ -50,7 +50,7 @@ class DrawView : View {
             paint.color = Color.BLACK
             canvas.drawLine(i.toFloat(),startY.toFloat(),endX.toFloat(),endY.toFloat(), paint)
             if(i in lowerBound..upperBound && endX in lowerBound..upperBound){
-                paint.color = Color.parseColor("#ff4949")
+                paint.color = Color.parseColor("#FF4081")
                 canvas.drawRect(i.toFloat(),startY.toFloat(),endX.toFloat(),canvas.height.div(2).minus(upperYBorder).toFloat(),paint)
             }
         }
@@ -144,10 +144,10 @@ class DrawView : View {
 
     private fun drawBounds(canvas : Canvas?){
         paint.color = Color.BLUE
-        canvas?.drawLine(lowerBound.toFloat(),canvas.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
         val lowerRounded = BigDecimal((lowerBound - leftXBorder - (this.width / 2.0)) / divFac).setScale(2, BigDecimal.ROUND_HALF_UP)
         var upperRounded = BigDecimal((upperBound - leftXBorder - (this.width / 2.0)) / divFac).setScale(2, BigDecimal.ROUND_HALF_UP)
 
+        canvas?.drawLine(lowerBound.toFloat(),canvas.height.toFloat(),lowerBound.toFloat(),0.toFloat(),paint)
         canvas?.drawText("$lowerRounded",lowerBound.toFloat(),canvas.height.div(2).toFloat(),paint)
 
         canvas?.drawLine(upperBound.toFloat(),canvas.height.toFloat(),upperBound.toFloat(),0.toFloat(),paint)
@@ -160,6 +160,8 @@ class DrawView : View {
         paint.strokeWidth = 3f
         scaleDetector = ScaleGestureDetector(context, ScaleListener())
         gestureDetector = GestureDetectorCompat(this.context,GestureListener())
+        lowerBound = width.toDouble().div(2.0) + 100
+        upperBound = width.toDouble().div(2.0) + 200
     }
 
     interface UpdatedBoundsListener {
