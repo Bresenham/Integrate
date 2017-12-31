@@ -1,5 +1,6 @@
 package com.example.standardbenutzer.integrate
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.AsyncTask
 import android.os.Bundle
@@ -22,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     private var functionValuesTasks : MutableList<AsyncFunctionValues>? = null
     private var integrationTasks : MutableList<AsyncAdaptiveIntegration>? = null
-    private val NUMBER_OF_TASKS = Runtime.getRuntime().availableProcessors()*2
+    private val NUMBER_OF_TASKS = Runtime.getRuntime().availableProcessors()
     private var precision = 0.0001
     private var prevUpperBound = 0.0
     private var prevLowerBound = 0.0
@@ -191,7 +192,11 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings -> {
+                var i = Intent(this, SettingsActivity::class.java)
+                startActivity(i)
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
