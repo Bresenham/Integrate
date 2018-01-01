@@ -2,15 +2,12 @@ package com.example.standardbenutzer.integrate
 
 import android.os.AsyncTask
 import android.os.Bundle
-import android.preference.Preference
 import android.preference.PreferenceFragment
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import android.preference.Preference.OnPreferenceClickListener
 import android.util.Log
-import android.view.View
 import android.widget.Toast
-import kotlinx.android.synthetic.main.content_main.*
 import java.util.concurrent.RejectedExecutionException
 
 
@@ -45,7 +42,7 @@ class SettingsActivity : AppCompatActivity {
             addPreferencesFromResource(R.xml.preferences)
             val preference = preferenceManager.findPreference("benchmark")
             preference.onPreferenceClickListener = OnPreferenceClickListener {
-                startAsyncIntegration(-2.0,2.0)
+                startAsyncIntegration(-0.125,0.125)
                 true
             }
         }
@@ -60,7 +57,7 @@ class SettingsActivity : AppCompatActivity {
                 val a1 = a + (((b-a) / NUMBER_OF_TASKS) * i)
                 val b1 = a + (((b-a) / NUMBER_OF_TASKS) * (i + 1))
                 try {
-                    adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "1/(0.000001 + x^2)", a1, b1, 0.000000001, object : OnAdaptiveIntegrationCompleted {
+                    adapt.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "1/(0.0000001 + x^2)", a1, b1, 0.000000001, object : OnAdaptiveIntegrationCompleted {
                         override fun onAdaptiveIntegrationCompleted(result: Double?, sumList: MutableList<Double>) {
                             if (sumList.count() == NUMBER_OF_TASKS) {
                                 val end = System.currentTimeMillis()
