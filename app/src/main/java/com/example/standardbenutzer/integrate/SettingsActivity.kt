@@ -1,7 +1,9 @@
 package com.example.standardbenutzer.integrate
 
+import android.content.Context
 import android.os.AsyncTask
 import android.os.Bundle
+import android.preference.Preference
 import android.preference.PreferenceFragment
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
@@ -9,7 +11,8 @@ import android.preference.Preference.OnPreferenceClickListener
 import android.util.Log
 import android.widget.Toast
 import java.util.concurrent.RejectedExecutionException
-
+import android.preference.SwitchPreference
+import android.preference.Preference.OnPreferenceChangeListener
 
 /**
  * Created by Standardbenutzer on 31.12.2017.
@@ -27,6 +30,7 @@ class SettingsActivity : AppCompatActivity {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
+
                 onBackPressed()
             }
             else -> return super.onOptionsItemSelected(item)
@@ -40,9 +44,17 @@ class SettingsActivity : AppCompatActivity {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             addPreferencesFromResource(R.xml.preferences)
-            val preference = preferenceManager.findPreference("benchmark")
-            preference.onPreferenceClickListener = OnPreferenceClickListener {
+
+            findPreference("benchmark").onPreferenceClickListener = OnPreferenceClickListener {
                 startAsyncIntegration(-0.125,0.125)
+                true
+            }
+
+            findPreference("incrPrecisionPreference").onPreferenceChangeListener = OnPreferenceChangeListener { preference, _ ->
+                val sharedPref = activity.getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+                val editor = sharedPref.edit()
+                editor.putBoolean("incrPrecisionPreference", !(preference as SwitchPreference).isChecked)
+                editor.apply()
                 true
             }
         }

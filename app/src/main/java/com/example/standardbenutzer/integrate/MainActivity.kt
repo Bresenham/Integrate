@@ -1,5 +1,7 @@
 package com.example.standardbenutzer.integrate
 
+import android.app.PendingIntent.getActivity
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.AsyncTask
@@ -18,6 +20,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.math.BigDecimal
 import java.util.concurrent.RejectedExecutionException
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,11 +33,14 @@ class MainActivity : AppCompatActivity() {
     private var precision = 0.0001
     private var prevUpperBound = 0.0
     private var prevLowerBound = 0.0
+    private val precisionValues = doubleArrayOf(0.0001, 0.000001, 0.00000001)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        setSharedPreferences()
 
         progressBar.max = NUMBER_OF_TASKS
         progressBar.progress = 0
@@ -75,11 +84,7 @@ class MainActivity : AppCompatActivity() {
         )
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-                when(p0?.progress){
-                    0 -> precision = 0.0001
-                    1 -> precision = 0.000001
-                    2 -> precision = 0.00000001
-                }
+                precision = precisionValues[p0?.progress!!]
                 if(evaluateFunction())
                     startAsyncIntegration(prevLowerBound,prevUpperBound)
             }
@@ -119,7 +124,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onAdaptiveIntegrationCompleted(result: Double?, sumList: MutableList<Double>) {
                         progressBar.progress = progressBar.progress + 1
                         if (sumList.count() == NUMBER_OF_TASKS) {
-                            editText.setText("[%.2f..%.2f]: %.8f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
+                            editText.setText("[%.2f..%.2f]: %.10f".format(a, b, sumList.stream().mapToDouble { it }.sum()))
                             list.clear()
                             progressBar.progress = 0
                             progressBar.visibility = View.GONE
@@ -176,9 +181,27 @@ class MainActivity : AppCompatActivity() {
         functionValuesTasks?.clear()
     }
 
+    private fun setSharedPreferences(){
+        val sharedPref = getSharedPreferences(getString(R.string.preference_file_name), Context.MODE_PRIVATE)
+        val highPrecisionEnabled = sharedPref.getBoolean("incrPrecisionPreference",false)
+        if(highPrecisionEnabled) {
+            precision = 0.00000000001
+            seekBar.visibility = SeekBar.GONE
+            startAsyncIntegration(prevLowerBound,prevUpperBound)
+        } else {
+            precision = precisionValues[seekBar.progress]
+            seekBar.visibility = SeekBar.VISIBLE
+        }
+    }
+
     override fun onConfigurationChanged(newConfig: Configuration?) {
         super.onConfigurationChanged(newConfig)
         startAsyncFuncCalc()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setSharedPreferences()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
